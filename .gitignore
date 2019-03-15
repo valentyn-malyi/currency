@@ -1,0 +1,9 @@
+# managed by dsynq: .dsynq/ data/
+.dsynq/
+data/
+
+venv/
+.idea
+*.pyc
+src/
+__pycache__/
