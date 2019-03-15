@@ -7,3 +7,4 @@ venv/
 *.pyc
 src/
 __pycache__/
+schemas/history/history.db
