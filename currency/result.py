@@ -39,12 +39,9 @@ def result(curr: Currency, mean: numpy.array, time: datetime, take: int, stop: i
 
 def main(curr: Currency, start: datetime, end: datetime, probability: float, number_bars: int, history_min: int,
          stop: int, take: int):
-    year = None
     for current_bar in curr.right(time=start, n=999999999):
         current_time = current_bar.time
-        if current_time.year != year:
-            print(current_time.year)
-            year = current_time.year
+        print(current_time)
         if current_time >= end:
             break
         array = []
