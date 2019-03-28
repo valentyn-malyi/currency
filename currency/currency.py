@@ -2,7 +2,7 @@ import numpy
 import sqlite3
 from datetime import datetime, timedelta
 from collections import deque
-from typing import Generator
+from typing import Generator, List
 from pytz import timezone
 
 
@@ -21,8 +21,13 @@ class Daily(Period):
 
 
 class H8(Period):
-    period = "H4"
+    period = "H8"
     delta = timedelta(hours=8)
+
+
+class H4(Period):
+    period = "H4"
+    delta = timedelta(hours=4)
 
 
 class Bar:

@@ -44,7 +44,7 @@ WSGI_APPLICATION = 'history.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'history.db',
+        'NAME': 'schemas/history/history.db',
     }
 }
 

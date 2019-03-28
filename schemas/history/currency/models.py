@@ -75,6 +75,38 @@ class GoldH8(Currency):
     pass
 
 
+class EurUsdH4(Currency):
+    pass
+
+
+class GbpUsdH4(Currency):
+    pass
+
+
+class UsdJpyH4(Currency):
+    pass
+
+
+class UsdCadH4(Currency):
+    pass
+
+
+class UsdChfH4(Currency):
+    pass
+
+
+class AudUsdH4(Currency):
+    pass
+
+
+class NzdUsdH4(Currency):
+    pass
+
+
+class GoldH4(Currency):
+    pass
+
+
 class SpDaily(Currency):
     pass
 
