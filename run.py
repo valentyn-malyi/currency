@@ -7,25 +7,20 @@ import os
 import csv
 
 # Ian put your parametrs
-period = Daily(number_bars=2500)
+period = H4(number_bars=7500)
 curency = [
-    Currency("eurusd", period=period),
-    Currency("gbpusd", period=period),
-    Currency("usdjpy", period=period),
-    Currency("audusd", period=period),
-    Currency("nzdusd", period=period),
-    Currency("usdcad", period=period),
-    Currency("usdchf", period=period)
+    Currency("eurusd", period=period)
 ]
 
-start = datetime(year=2010, month=1, day=1, tzinfo=timezone('UTC'))
-end = datetime(year=2018, month=12, day=1, tzinfo=timezone('UTC'))
-probability = 0.85
+start = datetime(year=2011, month=1, day=1, tzinfo=timezone('UTC'))
+end = datetime(year=2011, month=2, day=1, tzinfo=timezone('UTC'))
+probability = 0.99
 number_bars = 50
-history_min = 20
-stop = 9
-take = 3
+history_min = 100
+stop = 10
+take = 10
 start_n = 25
+skip = 5/6
 
 # End Ian parametrs
 os.chdir("data")
@@ -38,7 +33,7 @@ writer.writerow(["Cur", "Date", "Gain", "Days", "Exit", "History", "std", "mean"
 for curr in curency:
     print(curr.name)
     for i in main(curr=curr, start=start, end=end, probability=0.85, number_bars=number_bars, history_min=history_min,
-                  stop=stop, take=take):
+                  stop=stop, take=take, skip=skip):
         writer.writerow([curr.name] + i)
 
 f.close()

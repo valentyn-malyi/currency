@@ -1,15 +1,16 @@
 from currency.currency import Currency
 from datetime import datetime
 import numpy
+import random
 from typing import Generator, Tuple
 
 
 def result(curr: Currency, mean: numpy.array, time: datetime, take: int, stop: int) -> \
         Generator[Tuple[float, str, int], None, None]:
+    mean = -mean
     for d in range(len(mean)):
         state: str = "NONE"
         close, high, low = curr.get_high_low(time=time, n=len(mean))
-        mean = -mean
         if mean[d] > 0:
             for i in range(d):
                 if high[i] > mean[i] + take:
@@ -38,12 +39,14 @@ def result(curr: Currency, mean: numpy.array, time: datetime, take: int, stop: i
 
 
 def main(curr: Currency, start: datetime, end: datetime, probability: float, number_bars: int, history_min: int,
-         stop: int, take: int):
+         stop: int, take: int, skip=0):
     for current_bar in curr.right(time=start, n=999999999):
         current_time = current_bar.time
         print(current_time)
         if current_time >= end:
             break
+        if random.random()< skip:
+            continue
         array = []
         for bar in curr.left(time=current_time, n=number_bars):
             array.append(bar.close)
