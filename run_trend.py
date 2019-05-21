@@ -7,13 +7,14 @@ import os
 
 # Ian put your parametrs
 
+period = H4(number_bars=7500)
 start = datetime(year=2010, month=1, day=1, tzinfo=timezone('UTC'))
 end = datetime(year=2018, month=12, day=1, tzinfo=timezone('UTC'))
 probability = 0.85
 number_bars = 50
 take = 50
 stop = 50
-currs = [Currency("gold", Daily(number_bars=2500)), Currency("oil", Daily(number_bars=2500)), Currency("eurusd", Daily(number_bars=2500))]
+currs = [Currency("gbpusd", period=period), Currency("eurusd", period=period)]
 
 # End Ian parametrs
 

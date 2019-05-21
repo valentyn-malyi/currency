@@ -51,6 +51,7 @@ def main(currs: List[Currency], start: datetime, end: datetime, probability: flo
         best_bar = None
         best_corrcoef = 0
         array = []
+        print(current_time)
 
         for num_curr in range(len(currs)):
             curr_array = []
