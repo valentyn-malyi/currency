@@ -6,7 +6,7 @@ from typing import Generator, Tuple, List
 import matplotlib.pyplot as plt
 
 
-def destrib(a: numpy.ndarray, x:float):
+def destrib(a: numpy.array, x: float):
     n = len(a)
     r = bisect.bisect_right(a, x)
     l = bisect.bisect_left(a, x)
@@ -21,40 +21,35 @@ def destrib(a: numpy.ndarray, x:float):
         return (l + (x - a[l]) / (a[r] - a[l])) / n
 
 
-def result(curr: Currency, greed: List[numpy.array], time: datetime, number_bars: int,
-           enter: float) -> Generator[Tuple[float, str, int], None, None]:
+def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int, enter: float) -> \
+        Tuple[float, str, int, int, str]:
     close, high, low = curr.get_high_low(time=time, n=number_bars)
-    for d in range(number_bars):
-        g = greed[:,d]
-        if mean[d] > 0:
-            for i in range(d):
-                if high[i] > mean[i] + take:
-                    res = mean[i] + take
-                    state = "TAKE"
-                    break
-                if low[i] < mean[i] - stop:
-                    res = mean[i] - stop
-                    state = "STOP"
-                    break
-            else:
-                res = close[d]
-        else:
-            for i in range(d):
-                if high[i] > mean[i] + stop:
-                    state = "STOP"
-                    res = -mean[i] - stop
-                    break
-                if low[i] < mean[i] - take:
-                    state = "TAKE"
-                    res = -mean[i] + take
-                    break
-            else:
-                res = -close[d]
-        yield res, state, d
+    enter = min(max(0.01, enter), 0.2)
+    for i in range(1, number_bars):
+        g = greed[:, i]
+        g.sort()
+        if destrib(a=g, x=close[i]) > 1 - enter:
+            take = close[i - 1]
+            for j in range(i, number_bars):
+                if high[j] > 2 * take:
+                    return -take, "STOP", i, j - i, "SELL"
+                if low[j] < 0:
+                    return take, "TAKE", i, j - i, "SELL"
+            return take - close[number_bars - 1], "None", i, number_bars - i, "SELL"
+        if destrib(a=g, x=close[i]) < enter:
+            take = -close[i - 1]
+            for j in range(i, number_bars):
+                if low[j] < -2 * take:
+                    return -take, "STOP", i, j - i, "BUY"
+                if high[j] > 0:
+                    return take, "TAKE", i, j - i, "BUY"
+
+            return close[number_bars - 1] + take, "None", i, number_bars - i, "BUY"
+    return 0, "", -1, -1, ""
 
 
 def main(curr: Currency, start: datetime, end: datetime, probability: float, number_bars: int, history_min: int,
-         stop: int, take: int):
+         enter: float):
     for current_bar in curr.right(time=start, n=999999999):
         current_time = current_bar.time
         print(current_time)
@@ -64,18 +59,15 @@ def main(curr: Currency, start: datetime, end: datetime, probability: float, num
         for bar in curr.left(time=current_time, n=number_bars):
             array.append(bar.close)
         array = numpy.array(array)
-        greed = [0]
+        greed = []
         for slice in curr.slices(array=array, time=current_time, probability=probability):
             close, _, _ = curr.get_high_low(time=slice.time, n=number_bars)
             greed.append(close)
-            greed.append(-close)
-        print(greed)
-        for i in greed:
-            plt.plot(i)
-        plt.show()
-        plt.clf()
-        # index, mean, sd, len_similars = curr.mean_and_sd(
-        #     array=array, time=current_time, history_min=history_min, probability=probability)
-        # if index:
-        #     for res, state, d in result(curr=curr, mean=mean, time=current_time, take=take, stop=stop):
-        #         yield [current_time.replace(tzinfo=None), res, d, state, len_similars, sd[d], abs(mean[d])]
+        greed = numpy.array(greed)
+        if len(greed) < history_min:
+            continue
+        res, state, d, open_d, sb = result(
+            curr=curr, greed=greed, time=current_time, number_bars=number_bars, enter=enter)
+
+        if d >= 0:
+            yield [current_time.replace(tzinfo=None), res, state, len(greed), d, open_d, sb]

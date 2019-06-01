@@ -8,8 +8,8 @@ import os
 # Ian put your parametrs
 
 period = H4(number_bars=7500)
-start = datetime(year=2010, month=1, day=1, tzinfo=timezone('UTC'))
-end = datetime(year=2018, month=12, day=1, tzinfo=timezone('UTC'))
+start = datetime(year=2014, month=7, day=9, tzinfo=timezone('UTC'))
+end = datetime(year=2014, month=7, day=10, tzinfo=timezone('UTC'))
 probability = 0.85
 number_bars = 50
 take = 50

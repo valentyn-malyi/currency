@@ -7,20 +7,20 @@ import os
 import csv
 
 # Ian put your parametrs
-period = H4(number_bars=7500)
+period = Daily(number_bars=2500)
 curency = [
-    Currency("eurusd", period=period)
+    Currency("usdjpy", period=period)
 ]
 
-start = datetime(year=2011, month=1, day=1, tzinfo=timezone('UTC'))
-end = datetime(year=2011, month=2, day=1, tzinfo=timezone('UTC'))
-probability = 0.99
+start = datetime(year=2019, month=1, day=1, tzinfo=timezone('UTC'))
+end = datetime(year=2019, month=3, day=10, tzinfo=timezone('UTC'))
+probability = 0.85
 number_bars = 50
-history_min = 100
+history_min = 20
 stop = 10
 take = 10
 start_n = 25
-skip = 5/6
+skip = 0
 
 # End Ian parametrs
 os.chdir("data")
