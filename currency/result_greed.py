@@ -26,9 +26,9 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
     close, high, low = curr.get_high_low(time=time, n=number_bars)
     enter = min(max(0.01, enter), 0.2)
     for i in range(1, number_bars):
-        g = greed[:, i]
+        g = greed[:, i - 1]
         g.sort()
-        if destrib(a=g, x=close[i]) > 1 - enter:
+        if destrib(a=g, x=close[i - 1]) > 1 - enter and close[i - 1] > 0:
             take = close[i - 1]
             for j in range(i, number_bars):
                 if high[j] > 2 * take:
@@ -36,7 +36,7 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
                 if low[j] < 0:
                     return take, "TAKE", i, j - i, "SELL"
             return take - close[number_bars - 1], "None", i, number_bars - i, "SELL"
-        if destrib(a=g, x=close[i]) < enter:
+        if destrib(a=g, x=close[i - 1]) < enter and close[i - 1] < 0:
             take = -close[i - 1]
             for j in range(i, number_bars):
                 if low[j] < -2 * take:
