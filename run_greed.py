@@ -17,6 +17,7 @@ probability = 0.85
 number_bars = 50
 history_min = 20
 enter = 0.2
+stop_coef = 1
 
 # End Ian parametrs
 os.chdir("data")
@@ -29,7 +30,7 @@ writer.writerow(["Cur", "Date", "Gain", "State", "History", "Open", "Close", "s/
 for curr in curency:
     print(curr.name)
     for i in main(curr=curr, start=start, end=end, probability=0.85, number_bars=number_bars, history_min=history_min,
-                  enter=enter):
+                  enter=enter, stop_coef=stop_coef):
         writer.writerow([curr.name] + i)
 
 f.close()

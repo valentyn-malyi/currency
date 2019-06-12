@@ -21,7 +21,7 @@ def destrib(a: numpy.array, x: float):
         return (l + (x - a[l]) / (a[r] - a[l])) / n
 
 
-def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int, enter: float) -> \
+def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int, enter: float, stop_coef: float) -> \
         Tuple[float, str, int, int, str]:
     close, high, low = curr.get_high_low(time=time, n=number_bars)
     enter = min(max(0.01, enter), 0.2)
@@ -30,17 +30,19 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
         g.sort()
         if destrib(a=g, x=close[i - 1]) > 1 - enter and close[i - 1] > 0:
             take = close[i - 1]
+            stop = stop_coef * take
             for j in range(i, number_bars):
-                if high[j] > 2 * take:
-                    return -take, "STOP", i, j - i, "SELL"
+                if high[j] > take + stop:
+                    return -stop, "STOP", i, j - i, "SELL"
                 if low[j] < 0:
                     return take, "TAKE", i, j - i, "SELL"
             return take - close[number_bars - 1], "None", i, number_bars - i, "SELL"
         if destrib(a=g, x=close[i - 1]) < enter and close[i - 1] < 0:
             take = -close[i - 1]
+            stop = stop_coef * take
             for j in range(i, number_bars):
-                if low[j] < -2 * take:
-                    return -take, "STOP", i, j - i, "BUY"
+                if low[j] < -stop - take:
+                    return -stop, "STOP", i, j - i, "BUY"
                 if high[j] > 0:
                     return take, "TAKE", i, j - i, "BUY"
 
@@ -49,7 +51,7 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
 
 
 def main(curr: Currency, start: datetime, end: datetime, probability: float, number_bars: int, history_min: int,
-         enter: float):
+         enter: float, stop_coef: float):
     for current_bar in curr.right(time=start, n=999999999):
         current_time = current_bar.time
         print(current_time)
@@ -67,7 +69,7 @@ def main(curr: Currency, start: datetime, end: datetime, probability: float, num
         if len(greed) < history_min:
             continue
         res, state, d, open_d, sb = result(
-            curr=curr, greed=greed, time=current_time, number_bars=number_bars, enter=enter)
+            curr=curr, greed=greed, time=current_time, number_bars=number_bars, enter=enter, stop_coef=stop_coef)
 
         if d >= 0:
             yield [current_time.replace(tzinfo=None), res, state, len(greed), d, open_d, sb]
