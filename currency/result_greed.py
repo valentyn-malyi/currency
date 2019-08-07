@@ -59,7 +59,7 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
             if offer < 0:
                 for j in range(i + skip_open, number_bars):
                     if low[j] < stop:
-                        return stop - offer, "STOP", i, j - i - skip_open, "BUY"
+                        return -stop + offer, "STOP", i, j - i - skip_open, "BUY"
                     if high[j] > 0:
                         return - offer, "TAKE", i, j - i - skip_open, "BUY"
                     if j - i >= skip_close:
