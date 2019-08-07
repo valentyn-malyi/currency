@@ -2,7 +2,7 @@ import numpy
 import sqlite3
 from datetime import datetime, timedelta
 from collections import deque
-from typing import Generator, List
+from typing import Generator
 from pytz import timezone
 
 
