@@ -66,7 +66,7 @@ class Config:
 c = Config.init_from_file()
 
 os.chdir("data")
-name = "g{}-{}-{}-{}-{}.csv".format(c.probability, c.number_bars, c.history_min, c.enter, datetime.now())
+name = f"g{c.probability}-{c.number_bars}-{c.history_min}-{c.enter}-{datetime.now()}.csv"
 name = name.replace(" ", "-").replace(":", "-")
 f = open("{}".format(name), "w")
 writer = csv.writer(f, lineterminator="\n", delimiter=';')

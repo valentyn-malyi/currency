@@ -1,4 +1,4 @@
 matplotlib==3.0.3
-Django==2.2.1
+Django>=2.2.1
 numpy==1.16.3
 pytz==2019.1
