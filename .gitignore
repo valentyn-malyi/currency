@@ -8,3 +8,6 @@ venv/
 src/
 __pycache__/
 schemas/history/history.db
+
+# config
+greed.json
