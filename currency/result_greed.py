@@ -26,7 +26,6 @@ def destrib(a: numpy.array, x: float):
 def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int, enter: float, stop_coef: float,
            skip_open: int, skip_close: int) -> \
         Tuple[float, str, Union[int, None], int, str]:
-
     close, high, low = curr.get_high_low(time=time, n=number_bars)
     enter = min(max(0.01, enter), 0.2)
     for i in range(1, number_bars - skip_open):
@@ -38,10 +37,10 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
                 if high[i + skip_open] > stop:
                     return 0, "SKIP_DAY", i, skip_day_i, "SELL"
             offer = close[i + skip_open]
-            if offer > 0:
+            if offer > 0 and offer - stop < 0:
                 for j in range(i + skip_open, number_bars):
                     if high[j] > stop:
-                        return -(stop - offer), "STOP", i, j - i - skip_open, "SELL"
+                        return offer - stop, "STOP", i, j - i - skip_open, "SELL"
                     if low[j] < 0:
                         return offer, "TAKE", i, j - i - skip_open, "SELL"
                     if j - i >= skip_close:
@@ -56,7 +55,7 @@ def result(curr: Currency, greed: numpy.array, time: datetime, number_bars: int,
                 if low[i + skip_day_i] < stop:
                     return 0, "SIGNAL", i, skip_day_i, "BUY"
             offer = close[i + skip_open]
-            if offer < 0:
+            if offer < 0 and stop - offer < 0:
                 for j in range(i + skip_open, number_bars):
                     if low[j] < stop:
                         return stop - offer, "STOP", i, j - i - skip_open, "BUY"
