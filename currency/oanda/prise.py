@@ -40,27 +40,29 @@ Currencies = [
     Currency("cad", reverse=True)
 ]
 
-c = Config.init_from_file(path="../..")
-conn = sqlite3.connect('../../schemas/history/history.db')
-cursor = conn.cursor()
+if __name__ == '__main__':
 
-for cur in Currencies:
-    url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=2&"
+    c = Config.init_from_file(path="../..")
+    conn = sqlite3.connect('../../schemas/history/history.db')
+    cursor = conn.cursor()
 
-    headers = {'Authorization': f'Bearer {c.beaver}',
-               "Content-Type": "application/json"}
+    for cur in Currencies:
+        url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=2&"
 
-    req = requests.get(url, headers=headers).json()
-    pprint(req)
+        headers = {'Authorization': f'Bearer {c.beaver}',
+                   "Content-Type": "application/json"}
 
-    for candle in req["candles"]:
-        if candle["complete"]:
-            print(candle["time"])
-            # add six hours
-            time = datetime.datetime.strptime(candle["time"], "%Y-%m-%dT%H:%M:%S.%f0000Z").timestamp() + 3600 * 6
-            close = float(candle["mid"]["c"])
-            high = float(candle["mid"]["h"])
-            low = float(candle["mid"]["l"])
-            print(time, high, low)
-            cursor.execute(f"INSERT OR REPLACE into {cur.table} values ({time},{high},{low},{close})")
-        conn.commit()
+        req = requests.get(url, headers=headers).json()
+        pprint(req)
+
+        for candle in req["candles"]:
+            if candle["complete"]:
+                print(candle["time"])
+                # add six hours
+                time = datetime.datetime.strptime(candle["time"], "%Y-%m-%dT%H:%M:%S.%f0000Z").timestamp() + 3600 * 6
+                close = float(candle["mid"]["c"])
+                high = float(candle["mid"]["h"])
+                low = float(candle["mid"]["l"])
+                print(time, high, low)
+                cursor.execute(f"INSERT OR REPLACE into {cur.table} values ({time},{high},{low},{close})")
+            conn.commit()
