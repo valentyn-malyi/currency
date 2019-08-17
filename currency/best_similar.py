@@ -12,13 +12,13 @@ def result(curr: Currency, best_bar: Bar, time: datetime, take: int, stop: int, 
         state: str = "NONE"
         if mean[d] > 0:
             for i in range(d):
-                if high[i] > mean[i] + take:
-                    res = mean[i] + take
-                    state = "TAKE"
-                    break
                 if low[i] < mean[i] - stop:
                     res = mean[i] - stop
                     state = "STOP"
+                    break
+                if high[i] > mean[i] + take:
+                    res = mean[i] + take
+                    state = "TAKE"
                     break
             else:
                 res = close[d]
