@@ -11,3 +11,4 @@ schemas/history/history.db
 
 # config
 greed.json
+oanda.json

@@ -2,12 +2,10 @@ from currency.currency import Currency, Bar
 from datetime import datetime
 import numpy
 from typing import Generator, Tuple, List
-import matplotlib.pyplot as plt
 
 
 def result(curr: Currency, best_bar: Bar, time: datetime, take: int, stop: int, number_bars: int) -> \
         Generator[Tuple[float, str, int], None, None]:
-
     close, high, low = curr.get_high_low(time=time, n=number_bars)
     mean, _, _ = curr.get_high_low(time=best_bar.time, n=number_bars)
     for d in range(number_bars):
@@ -36,6 +34,7 @@ def result(curr: Currency, best_bar: Bar, time: datetime, take: int, stop: int, 
                     break
             else:
                 res = -close[d]
+
         yield res, state, d, mean[d]
 
 
@@ -84,5 +83,5 @@ def main(currs: List[Currency], start: datetime, end: datetime, probability: flo
         if best_bar is not None:
             for num_curr in range(len(currs)):
                 for res, state, d, m in result(curr=currs[num_curr], best_bar=best_bar, time=current_time,
-                                            number_bars=number_bars, take=take, stop=stop):
+                                               number_bars=number_bars, take=take, stop=stop):
                     yield [currs[num_curr].name, current_time.replace(tzinfo=None), res, d, state, m]
