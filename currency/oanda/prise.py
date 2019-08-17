@@ -59,7 +59,7 @@ if __name__ == '__main__':
     c = Config.init_from_file(path="../..")
     conn = sqlite3.connect('../../schemas/history/history.db')
     cursor = conn.cursor()
-    file_log = open(c.log.insert_bar, "wa")
+    file_log = open(c.log.insert_bar, "a")
 
     for cur in Currencies:
         url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=2&"
