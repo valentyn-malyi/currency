@@ -1,4 +1,4 @@
-from currency.currency import Currency
+from currency.utils import Currency
 from datetime import datetime
 import numpy
 import random

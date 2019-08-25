@@ -1,4 +1,4 @@
-from currency.currency import Currency, Daily, H8, H4
+from currency.utils import Currency, Daily, H8, H4
 from datetime import datetime
 from currency.best_similar import main
 from pytz import timezone

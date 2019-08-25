@@ -1,47 +1,37 @@
+from typing import List
+
 import requests
 import sqlite3
 import datetime
 import os
-from currency.oanda import Config
+from currency.utils import Daily, Period, Currency
+from currency.oanda import Config, h
 
 
-class Currency:
+def gen_currencies(period: Period) -> List[Currency]:
+    currencies = [
+        Currency(first="eur", period=period),
+        Currency(first="gbp", period=period),
+        Currency(second="jpy", period=period),
+        Currency(first="aud", period=period),
+        Currency(first="nzd", period=period),
+        Currency(second="cad", period=period),
+        Currency(second="chf", period=period)
+    ]
+    return currencies
 
-    def __init__(self, name: str, reverse=False):
-        if reverse:
-            self.name = f"usd{name}"
-            self.oanda = f"USD_{name.upper()}"
-        else:
-            self.name = f"{name}usd"
-            self.oanda = f"{name.upper()}_USD"
-        self.table = f"currency_{self.name}daily"
-
-
-Currencies = [
-    Currency("eur"),
-    Currency("gbp"),
-    Currency("jpy", reverse=True),
-    Currency("aud"),
-    Currency("nzd"),
-    Currency("cad", reverse=True),
-    Currency("chf", reverse=True)
-]
 
 if __name__ == '__main__':
     home = os.path.join(os.path.dirname(__file__), "..", "..")
-
     c = Config.init_from_file(path=home)
     conn = sqlite3.connect(os.path.join(home, "schemas", "history", "history.db"))
     cursor = conn.cursor()
     file_log = open(c.log.insert_bar, "a")
 
-    for cur in Currencies:
+    for cur in gen_currencies(period=Daily(1)):
         url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=3&"
 
-        headers = {'Authorization': f'Bearer {c.beaver}',
-                   "Content-Type": "application/json"}
-
-        req = requests.get(url, headers=headers).json()
+        req = requests.get(url, headers=h(c.beaver)).json()
 
         for candle in req["candles"]:
             if candle["complete"]:

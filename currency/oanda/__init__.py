@@ -27,3 +27,9 @@ class Config:
         log = Log.init_from_dict(d["log"])
 
         return cls(beaver=beaver, account=account, log=log)
+
+
+def h(beaver: str) -> dict:
+    headers = {'Authorization': f'Bearer {beaver}',
+               "Content-Type": "application/json"}
+    return headers

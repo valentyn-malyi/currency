@@ -1,4 +1,4 @@
-from currency.currency import Currency, Bar
+from currency.utils import Currency, Bar
 from datetime import datetime
 import numpy
 from typing import Generator, Tuple, List

@@ -1,8 +1,9 @@
 import numpy
 import sqlite3
+import os
 from datetime import datetime, timedelta
 from collections import deque
-from typing import Generator
+from typing import Iterator
 from pytz import timezone
 
 
@@ -14,10 +15,18 @@ class Period:
     delta: timedelta
     period: str
 
+    @staticmethod
+    def utc(time: datetime):
+        return time.replace(tzinfo=timezone('UTC'))
+
 
 class Daily(Period):
     period = "Daily"
     delta = timedelta(days=1)
+
+    @staticmethod
+    def utc(time: datetime):
+        return time.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=timezone('UTC'))
 
 
 class H8(Period):
@@ -37,6 +46,9 @@ class Bar:
         self.high = high
         self.low = low
 
+    def __repr__(self):
+        return f"{self.time.timestamp()}|{self.time}|{self.close}"
+
 
 class Similar(Bar):
 
@@ -47,21 +59,26 @@ class Similar(Bar):
         self.abs = abs(corrcoef)
         self.n = n
 
+    def __repr__(self):
+        return f"{self.time.timestamp()}|{self.time}|{self.close}"
+
 
 class Currency:
 
-    def __init__(self, name: str, period: Period):
+    def __init__(self, period: Period, first: str = "usd", second: str = "usd"):
+        self.name = f"{first}{second}"
+        self.oanda = f"{first.upper()}_{second.upper()}"
         self.period = period
-        self.conn = sqlite3.connect('schemas/history/history.db')
+        home = os.path.join(os.path.dirname(__file__), "..")
+        self.conn = sqlite3.connect(os.path.join(home, "schemas", "history", "history.db"))
         self.cursor = self.conn.cursor()
-        self.name = name
         self.table = "currency_" + self.name + period.period
 
     def close(self):
         self.cursor.close()
         self.conn.close()
 
-    def left(self, time: datetime, n: int) -> Generator[Bar, None, None]:
+    def left(self, time: datetime, n: int) -> Iterator[Bar]:
         # noinspection SqlResolve
         self.cursor.execute(
             "SELECT * FROM (SELECT * FROM {table} WHERE t < {t} ORDER BY -t LIMIT {n}) AS s "
@@ -70,7 +87,7 @@ class Currency:
             yield Bar(time=datetime.utcfromtimestamp(select[0]).replace(tzinfo=timezone('UTC')), close=select[3],
                       high=select[1], low=select[2])
 
-    def right(self, time: datetime, n: int) -> Generator[Bar, None, None]:
+    def right(self, time: datetime, n: int) -> Iterator[Bar]:
         # noinspection SqlResolve
         self.cursor.execute(
             "select * from {table} where t >= {t} order by t limit {n}".format(
@@ -79,7 +96,7 @@ class Currency:
             yield Bar(time=datetime.utcfromtimestamp(select[0]).replace(tzinfo=timezone('UTC')), close=select[3],
                       high=select[1], low=select[2])
 
-    def slices(self, array: numpy.array, time: datetime, probability: float) -> Generator[Similar, None, None]:
+    def slices(self, array: numpy.array, time: datetime, probability: float) -> Iterator[Similar]:
         n = len(array)
         delta = self.period.delta * n
         deq = deque(maxlen=n)

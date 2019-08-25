@@ -1,5 +1,5 @@
 from currency.result import main
-from currency.currency import Currency, Daily, H8, H4
+from currency.utils import Currency, Daily, H8, H4
 from currency.stats import create_stats_file
 from datetime import datetime
 from pytz import timezone
