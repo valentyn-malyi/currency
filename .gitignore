@@ -10,5 +10,6 @@ __pycache__/
 schemas/history/history.db
 
 # config
+time_interval.json
 greed.json
 oanda.json

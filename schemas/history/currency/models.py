@@ -113,3 +113,21 @@ class SpDaily(Currency):
 
 class OilDaily(Currency):
     pass
+
+
+class Greed(models.Model):
+    #  Cur;Date;Gain;State;History;Open;Close;s/b
+    t = models.PositiveIntegerField(null=False)
+    currency = models.TextField(null=False)
+    history = models.PositiveIntegerField(null=False)
+    gain = models.FloatField(null=True)
+    state = models.TextField(null=True)
+    direction = models.TextField(null=True)
+    o = models.PositiveIntegerField(null=True)
+    c = models.PositiveIntegerField(null=True)
+    oanda = models.PositiveIntegerField(null=True)
+    right_bar = models.PositiveIntegerField(default=0)
+    str_datetime =  models.TextField(null=False)
+
+    class Meta:
+        unique_together = (("t", "currency"),)

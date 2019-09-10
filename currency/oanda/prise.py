@@ -23,7 +23,7 @@ def gen_currencies(period: Period) -> List[Currency]:
 
 if __name__ == '__main__':
     home = os.path.join(os.path.dirname(__file__), "..", "..")
-    c = Config.init_from_file(path=home)
+    c = Config.init_from_file()
     conn = sqlite3.connect(os.path.join(home, "schemas", "history", "history.db"))
     cursor = conn.cursor()
     file_log = open(c.log.insert_bar, "a")

@@ -1,11 +1,13 @@
 import numpy
 import sqlite3
 import os
+import json
 from datetime import datetime, timedelta
 from collections import deque
 from typing import Iterator
 from pytz import timezone
 
+HOME = os.path.join(os.path.join(os.path.dirname(__file__), ".."))
 
 class Period:
 
@@ -14,15 +16,39 @@ class Period:
 
     delta: timedelta
     period: str
+    atr: int
 
     @staticmethod
     def utc(time: datetime):
         return time.replace(tzinfo=timezone('UTC'))
 
 
+class TimeInterval:
+    config_name = "time_interval.json"
+    context_keys = "contexts"
+    current_context_key = "current_context"
+
+    def __init__(self, start: datetime, end: datetime):
+        self.start = start
+        self.end = end
+
+    @classmethod
+    def init_from_file(cls) -> "TimeInterval":
+        config = json.load(open(os.path.join(HOME, cls.config_name)))
+        current_name = config[cls.current_context_key]
+        context = config[cls.context_keys][current_name]
+        start = datetime(year=context["start"]["year"], month=context["start"]["month"], day=context["start"]["day"],
+                         tzinfo=timezone('UTC'))
+        end = datetime(year=context["end"]["year"], month=context["end"]["month"], day=context["end"]["day"],
+                       tzinfo=timezone('UTC'))
+
+        return cls(start=start, end=end)
+
+
 class Daily(Period):
     period = "Daily"
     delta = timedelta(days=1)
+    atr = 5
 
     @staticmethod
     def utc(time: datetime):
@@ -32,9 +58,11 @@ class Daily(Period):
 class H8(Period):
     period = "H8"
     delta = timedelta(hours=8)
+    atr = 15
 
 
 class H4(Period):
+    atr = 30
     period = "H4"
     delta = timedelta(hours=4)
 
@@ -59,13 +87,12 @@ class Similar(Bar):
         self.abs = abs(corrcoef)
         self.n = n
 
-    def __repr__(self):
-        return f"{self.time.timestamp()}|{self.time}|{self.close}"
-
 
 class Currency:
 
     def __init__(self, period: Period, first: str = "usd", second: str = "usd"):
+        self.first = first
+        self.second = second
         self.name = f"{first}{second}"
         self.oanda = f"{first.upper()}_{second.upper()}"
         self.period = period
@@ -99,10 +126,11 @@ class Currency:
     def slices(self, array: numpy.array, time: datetime, probability: float) -> Iterator[Similar]:
         n = len(array)
         delta = self.period.delta * n
+        double_delta = delta * 2
         deq = deque(maxlen=n)
         last_time = datetime.min
         last_time = last_time.replace(tzinfo=timezone('UTC'))
-        for bar in self.left(time=time - delta, n=self.period.number_bars):
+        for bar in self.left(time=time - double_delta, n=self.period.number_bars):
             deq.append(bar.close)
             if len(deq) < n or bar.time - last_time < delta:
                 continue
@@ -125,9 +153,9 @@ class Currency:
 
     def atr(self, time) -> float:
         s = 0
-        for select in self.left(time=time, n=5):
-            s += select.high - select.low
-        return s / 5
+        for bar in self.left(time=time, n=self.period.atr):
+            s += bar.high - bar.low
+        return s / self.period.atr
 
     def get_high_low(self, time, n) -> (numpy.array, numpy.array, numpy.array):
         atr = self.atr(time=time)
