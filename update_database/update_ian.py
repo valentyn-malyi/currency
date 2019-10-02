@@ -16,13 +16,11 @@ for csv_file in os.listdir("."):
         table_name = csv_file.split("_")
         table_name = "currency_" + table_name[0] + table_name[1]
         # noinspection SqlWithoutWhere
-        cursor.execute("DELETE FROM {}".format(table_name))
-        conn.commit()
         for line in f:
             time = datetime.strptime(line["Time"], "%x").replace(tzinfo=timezone('UTC'))
             time = time.timestamp()
             close = float(line["Last"])
             high = float(line["High"])
             low = float(line["Low"])
-            cursor.execute("INSERT into {} values (?,?,?,?)".format(table_name), [time, high, low, close])
+            cursor.execute("INSERT OR REPLACE into {} values (?,?,?,?)".format(table_name), [time, high, low, close])
         conn.commit()

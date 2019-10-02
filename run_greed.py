@@ -22,3 +22,5 @@ for curency in greed_config.curency:
             [curency.name, greed.time.date(), greed.trade.gain, greed.trade.state, greed.len_greed, greed.trade.o, greed.trade.c,
              greed.trade.direction])
         f.flush()
+
+

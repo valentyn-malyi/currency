@@ -18,7 +18,7 @@ if __name__ == '__main__':
         for greed in Greed.get_greed_from_table(curency, settings=greed_config.settings):
             print(greed)
             greed.get_gain()
-            greed.trade.right_bar += 1
+            greed.update_right_bar(end=time)
             greed.check_open()
 
             if greed.trade.oanda is None and greed.trade.is_open() and greed.check_skip() and greed.trade.state is None:
@@ -26,19 +26,21 @@ if __name__ == '__main__':
                 if greed.trade.direction == "sell":
                     take = greed.last_price() + plus * greed.settings.stop_coef
                     stop = greed.last_price() - plus
+                    print(f"take={take}\tstop={stop}")
                     trade = Trade.create(config=oanda_config, currency=greed.currency, units=oanda_config.units, take=take, stop=stop)
                 else:
                     take = greed.last_price() - plus * greed.settings.stop_coef
                     stop = greed.last_price() + plus
+                    print(f"take={take}\tstop={stop}")
                     trade = Trade.create(config=oanda_config, currency=greed.currency, units=-oanda_config.units, take=take, stop=stop)
                 greed.trade.oanda = trade.id
 
             greed.check_end()
 
-            if greed.trade.is_close():
+            if greed.trade.is_close() and greed.trade.oanda is not None:
                 trade = Trade(config=oanda_config, currency=greed.currency, i=greed.trade.oanda)
                 print(trade.close())
-            greed.save()
+            greed.save(end=time)
         print("new")
         greed = Greed(time=time, currency=curency, settings=greed_config.settings)
         print(greed)

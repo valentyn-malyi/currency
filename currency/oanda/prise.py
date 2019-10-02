@@ -16,7 +16,10 @@ def gen_currencies(period: Period) -> List[Currency]:
         Currency(first="aud", period=period),
         Currency(first="nzd", period=period),
         Currency(second="cad", period=period),
-        Currency(second="chf", period=period)
+        Currency(second="chf", period=period),
+        Currency(first="xau", period=period),
+        Currency(first="spx500", period=period),
+        Currency(first="bco", period=period)
     ]
     return currencies
 

@@ -94,8 +94,10 @@ class Greed:
                 curency=curency, settings=settings)
 
     class Trade:
-        def __init__(self, gain: float = None, state: str = None, direction: str = None, o: int = None, c: int = None, oanda: int = None,
+        def __init__(self, last_update: datetime, gain: float = None, state: str = None, direction: str = None, o: int = None, c: int = None,
+                     oanda: int = None,
                      right_bar: int = 0):
+            self.last_update = last_update
             self.gain = gain
             self.state = state
             self.direction = direction
@@ -121,7 +123,7 @@ class Greed:
         self.currency = currency
         self.time = currency.period.utc(time)
         self.settings = settings
-        self.trade = self.Trade()
+        self.trade = self.Trade(last_update=self.time)
 
         left = []
         for bar in currency.left(time=self.time, n=settings.number_bars):
@@ -147,17 +149,32 @@ class Greed:
     def atr(self) -> float:
         return self.currency.atr(self.time)
 
-    def save(self):
-        sql = f"UPDATE currency_greed set right_bar={self.trade.right_bar},gain={null(self.trade.gain)},state={null(self.trade.state)}," \
-              f"direction={null(self.trade.direction)},o={null(self.trade.o)},c={null(self.trade.c)},oanda={null(self.trade.oanda)} " \
-              f"where t={self.time.timestamp()} and currency='{self.currency.first}|{self.currency.second}'"
-        self.cursor.execute(sql)
-        self.connection.commit()
+    def save(self, end: datetime):
+        end = self.currency.period.utc(end)
+        if end > self.trade.last_update:
+            sql = f"UPDATE currency_greed set " \
+                  f"gain={null(self.trade.gain)}," \
+                  f"state={null(self.trade.state)}," \
+                  f"direction={null(self.trade.direction)}," \
+                  f"o={null(self.trade.o)}," \
+                  f"c={null(self.trade.c)}," \
+                  f"oanda={null(self.trade.oanda)}," \
+                  f"last_update={end.timestamp()}," \
+                  f"str_last_update='{str(end)}' " \
+                  f"where t={self.time.timestamp()} and currency='{self.currency.first}|{self.currency.second}'"
+            self.cursor.execute(sql)
+            self.connection.commit()
 
     def save_first_time(self):
-        sql = f"INSERT into currency_greed(t,currency,history,right_bar,str_datetime) " \
-              f"values ({self.time.timestamp()}, '{self.currency.first}|{self.currency.second}'," \
-              f" {self.len_greed},{self.trade.right_bar},'{str(self.time)}')"
+        sql = f"INSERT OR REPLACE into currency_greed(t,currency,history,str_datetime,last_update,str_last_update) values " \
+              f"(" \
+              f"{self.time.timestamp()}," \
+              f"'{self.currency.first}|{self.currency.second}'," \
+              f"{self.len_greed}," \
+              f"'{str(self.time)}'," \
+              f"{self.time.timestamp()}," \
+              f"'{str(self.time)}'" \
+              f")"
         self.cursor.execute(sql)
         self.connection.commit()
 
@@ -170,22 +187,24 @@ class Greed:
 
     @classmethod
     def get_greed_from_table(cls, currency: Currency, settings: Settings) -> Iterator["Greed"]:
-        sql = f"SELECT t,currency,gain,state,direction,o,c,right_bar FROM currency_greed where state is null " \
+        sql = f"SELECT t,currency,gain,state,direction,o,c,last_update,oanda FROM currency_greed where state is null " \
               f"and currency='{currency.first}|{currency.second}'"
         cls.cursor.execute(sql)
         for line in cls.cursor.fetchall():
-            time = datetime.utcfromtimestamp(line[0])
-            greed = Greed(time=time, currency=currency, settings=settings)
+            time = currency.period.utc(datetime.utcfromtimestamp(line[0]))
+            greed = cls(time=time, currency=currency, settings=settings)
             greed.trade.gain = line[2]
             greed.trade.state = line[3]
             greed.trade.direction = line[4]
             greed.trade.o = line[5]
             greed.trade.c = line[6]
-            greed.trade.right_bar = line[7]
+            greed.trade.last_update = currency.period.utc(datetime.utcfromtimestamp(line[7]))
+            greed.trade.right_bar = currency.period.get_working_bars(start=time, end=greed.trade.last_update) - 1
+            greed.trade.oanda = line[8]
             yield greed
 
     def check_open(self):
-        if not self.trade.is_status() and not self.trade.is_open():
+        if not self.trade.is_status() and not self.trade.is_open() and self.trade.right_bar > 0:
             n = self.trade.right_bar - 1
             greed_day = self.greed[:, n]
             greed_day.sort()
@@ -259,6 +278,12 @@ class Greed:
                 elif self.check_skip():
                     self.trade.gain = self.close[n] - self.day_enter_close()
 
+    def update_right_bar(self, end: datetime):
+        end = self.currency.period.utc(end)
+        if end < self.time:
+            raise ValueError(f"end < self.time\nstart = {self.time}\nend = {end}")
+        self.trade.right_bar = self.currency.period.get_working_bars(start=self.time, end=end)
+
 
 def run_history(time_interval: TimeInterval, curency: Currency, greed_config: Greed.Config) -> Iterator[Greed]:
     time = time_interval.start
@@ -281,7 +306,7 @@ def insert_greed_table(last_for=70):
     Greed.truncate_table()
     greed_config = Greed.Config.init_from_file()
     for curency in greed_config.curency:
-        end = curency.period.utc(datetime.now())
+        end = curency.period.utc(datetime.now()) - curency.period.delta
         time = end - curency.period.delta * last_for
         while time < end:
             time += curency.period.delta
@@ -289,13 +314,13 @@ def insert_greed_table(last_for=70):
                 continue
             for greed in Greed.get_greed_from_table(curency, settings=greed_config.settings):
                 greed.get_gain()
-                greed.trade.right_bar += 1
+                greed.update_right_bar(end=time)
                 greed.check_open()
                 greed.check_end()
-                greed.save()
+                greed.save(end=time)
             greed = Greed(time=time, currency=curency, settings=greed_config.settings)
             print(greed)
             if greed.len_greed >= greed_config.settings.history_min:
                 greed.save_first_time()
 
-insert_greed_table()
+# insert_greed_table(10)

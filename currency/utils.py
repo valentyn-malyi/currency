@@ -4,10 +4,11 @@ import os
 import json
 from datetime import datetime, timedelta
 from collections import deque
-from typing import Iterator
+from typing import Iterator, Tuple
 from pytz import timezone
 
 HOME = os.path.join(os.path.join(os.path.dirname(__file__), ".."))
+
 
 class Period:
 
@@ -19,8 +20,12 @@ class Period:
     atr: int
 
     @staticmethod
-    def utc(time: datetime):
+    def utc(time: datetime) -> datetime:
         return time.replace(tzinfo=timezone('UTC'))
+
+    @staticmethod
+    def get_working_bars(start: datetime, end: datetime) -> int:
+        return 0
 
 
 class TimeInterval:
@@ -51,8 +56,23 @@ class Daily(Period):
     atr = 5
 
     @staticmethod
-    def utc(time: datetime):
+    def utc(time: datetime) -> datetime:
         return time.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=timezone('UTC'))
+
+    @staticmethod
+    def get_working_bars(start: datetime, end: datetime) -> int:
+        if start > end:
+            return -1
+        sw, ew = start.weekday(), end.weekday()
+        s1 = start - timedelta(days=sw)
+        e1 = end - timedelta(days=ew)
+        s = (e1 - s1).days // 7 * 5
+        t = ew - sw
+        if sw == 6:
+            t += 1
+        if ew == 6:
+            t -= 1
+        return s + t
 
 
 class H8(Period):
@@ -95,11 +115,15 @@ class Currency:
         self.second = second
         self.name = f"{first}{second}"
         self.oanda = f"{first.upper()}_{second.upper()}"
+        self.decode = f"{first.upper()}|{second.upper()}"
         self.period = period
         home = os.path.join(os.path.dirname(__file__), "..")
         self.conn = sqlite3.connect(os.path.join(home, "schemas", "history", "history.db"))
         self.cursor = self.conn.cursor()
         self.table = "currency_" + self.name + period.period
+
+    def __repr__(self):
+        return f"{self.name}"
 
     def close(self):
         self.cursor.close()
@@ -123,7 +147,7 @@ class Currency:
             yield Bar(time=datetime.utcfromtimestamp(select[0]).replace(tzinfo=timezone('UTC')), close=select[3],
                       high=select[1], low=select[2])
 
-    def slices(self, array: numpy.array, time: datetime, probability: float) -> Iterator[Similar]:
+    def slices(self, array: numpy.array, time: datetime, probability: float, abs_factor: bool = True) -> Iterator[Similar]:
         n = len(array)
         delta = self.period.delta * n
         double_delta = delta * 2
@@ -135,9 +159,15 @@ class Currency:
             if len(deq) < n or bar.time - last_time < delta:
                 continue
             corrcoef = numpy.corrcoef(array, deq)[0, 1]
-            if abs(corrcoef) > probability:
-                last_time = bar.time
-                yield Similar(bar=bar, corrcoef=corrcoef, n=n)
+
+            if abs_factor:
+                if abs(corrcoef) > probability:
+                    last_time = bar.time
+                    yield Similar(bar=bar, corrcoef=corrcoef, n=n)
+            else:
+                if corrcoef > probability:
+                    last_time = bar.time
+                    yield Similar(bar=bar, corrcoef=corrcoef, n=n)
 
     def profit(self, similar: Similar) -> numpy.array:
         close = []
@@ -169,14 +199,15 @@ class Currency:
             low.append(select.low - first)
         return numpy.array(close) / atr, numpy.array(high) / atr, numpy.array(low) / atr
 
-    def mean_and_sd(self, array: numpy.array, time, probability, history_min) -> (bool, numpy.array, numpy.array, int):
+    def mean_and_sd(self, array: numpy.array, time: datetime, probability: float) -> Tuple[numpy.ndarray, numpy.ndarray, int]:
         list_profits = []
         len_similars = 0
         for similar in self.slices(array=array, time=time, probability=probability):
             list_profits.append(self.profit(similar=similar))
             len_similars += 1
-        if history_min <= len(list_profits):
+        if len(list_profits) >= 2:
             mean = numpy.mean(list_profits, axis=0)
             sd = numpy.std(list_profits, axis=0)
-            return True, mean, abs(mean) / sd, len_similars
-        return False, numpy.array([]), numpy.array([]), len_similars
+            return mean, abs(mean) / sd, len_similars
+        else:
+            return numpy.array([]), numpy.array([]), len_similars
