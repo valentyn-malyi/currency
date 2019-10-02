@@ -13,3 +13,5 @@ schemas/history/history.db
 time_interval.json
 greed.json
 oanda.json
+first.json
+third.json
