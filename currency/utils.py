@@ -187,7 +187,7 @@ class Currency:
             s += bar.high - bar.low
         return s / self.period.atr
 
-    def get_high_low(self, time, n) -> (numpy.array, numpy.array, numpy.array):
+    def get_high_low(self, time, n) -> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
         atr = self.atr(time=time)
         close = []
         high = []
