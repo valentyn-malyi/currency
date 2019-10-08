@@ -176,7 +176,7 @@ class Third:
         return f"{self.time}|{self.time.timestamp()}|{self.currency_pair.currency_main.name}|{self.n}|{self.gain_mean}|{self.direction}" \
                f"\n{self.trade.gain},{self.trade.state},{self.trade.c}"
 
-    def save_third_time(self):
+    def save_first_time(self):
         if self.n is not None:
             sql = f"INSERT OR IGNORE into currency_third(t,currency_pair,str_datetime,n,gain_mean,direction) values " \
                   f"(" \

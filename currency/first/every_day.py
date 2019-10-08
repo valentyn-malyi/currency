@@ -10,7 +10,7 @@ if __name__ == '__main__':
     time_interval = TimeInterval.init_from_file()
 
     for curency in first_config.curency:
-        print(curency.name)
+        print(curency)
         time = curency.period.utc(datetime.now())
         if time.weekday() in [5, 6]:
             continue
@@ -19,6 +19,7 @@ if __name__ == '__main__':
         first = First(time=time, currency=curency, settings=first_config.settings)
 
         if first.n is not None:
+            print("NEW:", first)
             first.save_first_time()
 
         for first in First.get_from_table(currency=curency, settings=first_config.settings):
@@ -35,13 +36,14 @@ if __name__ == '__main__':
                     stop = first.enter_close() + plus * first.settings.stop
                     trade = Trade.create(config=oanda_config, currency=first.currency, units=-oanda_config.units, take=take, stop=stop)
                 first.trade.oanda = trade.id
-                print(trade)
+                print("OPEN:", trade)
                 first.save()
 
             first.result(time=time)
 
-            if first.trade.state is not None and first.trade.oanda is not None:
-                trade = Trade(config=oanda_config, currency=first.currency, i=first.trade.oanda)
-                print(trade)
-                print(trade.close())
+            if first.trade.state is not None:
+                if first.trade.oanda is not None:
+                    trade = Trade(config=oanda_config, currency=first.currency, i=first.trade.oanda)
+                    print(trade.close())
+                print("CLOSE:", first)
                 first.save()
