@@ -106,6 +106,9 @@ class First:
         self.gain_mean: Union[float, None] = None
         self.n: Union[int, None] = None
         self.direction: Union[str, None] = None
+        self.close: Union[numpy.ndarray, None] = None
+        self.high: Union[numpy.ndarray, None] = None
+        self.low: Union[numpy.ndarray, None] = None
 
         array = []
         for bar in currency.left(time=time, n=settings.number_bars):
@@ -121,6 +124,7 @@ class First:
             self.n = self.good_days[-1]
             self.gain_mean = self.mean[self.n]
             self.direction = "buy" if self.gain_mean > 0 else "sell"
+            self.close, self.high, self.low = self.currency.get_high_low(time=self.time, n=self.n + 1)
 
     def __repr__(self):
         return f"{self.time}|{self.time.timestamp()}|{self.currency.name}|{self.n}|{self.gain_mean}|{self.direction}" \
@@ -157,7 +161,6 @@ class First:
             time = currency.period.utc(datetime.utcfromtimestamp(line[0]))
             first = cls(time=time, currency=currency, settings=settings)
             first.trade.oanda = line[1]
-            first.trade.state = line[2]
             yield first
 
     def enter_close(self) -> float:
@@ -172,29 +175,50 @@ class First:
         else:
             return False
 
-    def result(self):
+    def result(self, time: datetime):
+        time = self.currency.period.utc(time)
         if self.n is not None:
-            close, high, low = self.currency.get_high_low(time=self.time, n=self.n + 1)
             if self.gain_mean > 0:
-                for i in range(self.n):
-                    if low[i] < self.mean[i] - self.settings.stop:
-                        self.trade.update(gain=self.mean[i] - self.settings.stop, c=i, state="STOP")
+                for i in range(self.close.size):
+                    if self.low[i] < - self.settings.stop:
+                        self.trade.update(gain=-self.settings.stop, c=i, state="STOP")
                         break
-                    if high[i] > self.mean[i] + self.settings.take:
-                        self.trade.update(gain=self.mean[i] + self.settings.take, c=i, state="TAKE")
+
+                    if self.high[i] > self.settings.take:
+                        self.trade.update(gain=self.settings.take, c=i, state="TAKE")
                         break
-                else:
-                    self.trade.update(gain=close[self.n], c=self.n, state="CLOSE")
+
+                    if self.low[i] < self.mean[i] - self.settings.stop:
+                        self.trade.update(gain=self.close[i], c=i, state="LOW")
+
+                        break
+                    if self.high[i] > self.mean[i] + self.settings.take:
+                        self.trade.update(gain=self.close[i], c=i, state="HIGH")
+                        break
+
+                if self.trade.state is None and self.is_close(time=time):
+                    self.trade.update(gain=self.close[self.n], c=self.n, state="CLOSE")
+
             else:
-                for i in range(self.n):
-                    if high[i] > self.mean[i] + self.settings.stop:
-                        self.trade.update(gain=-self.mean[i] - self.settings.stop, c=i, state="STOP")
+                for i in range(self.close.size):
+                    if self.high[i] > self.settings.stop:
+                        self.trade.update(gain=-self.settings.stop, c=i, state="STOP")
                         break
-                    if low[i] < self.mean[i] - self.settings.take:
-                        self.trade.update(gain=-self.mean[i] + self.settings.take, c=i, state="TAKE")
+
+                    if self.low[i] < - self.settings.take:
+                        self.trade.update(gain=self.settings.take, c=i, state="TAKE")
                         break
-                else:
-                    self.trade.update(gain=-close[self.n], c=self.n, state="CLOSE")
+
+                    if self.high[i] > self.mean[i] + self.settings.stop:
+                        self.trade.update(gain=-self.close[i], c=i, state="LOW")
+                        break
+
+                    if self.low[i] < self.mean[i] - self.settings.take:
+                        self.trade.update(gain=-self.close[i], c=i, state="HIGH")
+                        break
+
+                if self.trade.state is None and self.is_close(time=time):
+                    self.trade.update(gain=-self.close[self.n], c=self.n, state="CLOSE")
 
     def save(self):
         if self.n is not None:

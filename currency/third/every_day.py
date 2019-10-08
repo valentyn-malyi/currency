@@ -32,7 +32,7 @@ if __name__ == '__main__':
             if first.is_close(time=time) and first.trade.oanda is not None:
                 trade = Trade(config=oanda_config, currency=first.currency, i=first.trade.oanda)
                 print(trade.close())
-                first.result()
+                first.result(time=time)
                 print(first.trade.oanda)
                 first.save()
 

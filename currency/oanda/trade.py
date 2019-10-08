@@ -14,6 +14,9 @@ class Trade:
         self.take = take
         self.stop = stop
 
+    def __repr__(self):
+        return f"{self.id}|{self.currency}|{self.units}|{self.take}|{self.stop}"
+
     @classmethod
     def create(cls, config: Config, currency: Currency, units: int, take: float, stop: float):
         url = f"https://api-fxpractice.oanda.com/v3/accounts/{config.account}/orders"

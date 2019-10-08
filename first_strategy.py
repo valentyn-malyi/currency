@@ -8,6 +8,7 @@ if __name__ == '__main__':
 
     first_config = First.Config.init_from_file()
     time_interval = TimeInterval.init_from_file()
+    time_now = datetime.now()
 
     os.chdir("data")
     name = f"f1_{first_config.settings.probability}-{first_config.settings.number_bars}-{first_config.settings.history_min}-" \
@@ -20,6 +21,6 @@ if __name__ == '__main__':
     for curency in first_config.curency:
         print(curency.name)
         for first in run_history(curency=curency, time_interval=time_interval, first_config=first_config):
-            first.result()
+            first.result(time=time_now)
             writer.writerow([curency.name, first.time.date(), first.trade.gain, first.n, first.mean[first.n], first.history, first.sd[first.n]])
             f.flush()

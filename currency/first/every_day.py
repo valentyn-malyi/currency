@@ -35,12 +35,13 @@ if __name__ == '__main__':
                     stop = first.enter_close() + plus * first.settings.stop
                     trade = Trade.create(config=oanda_config, currency=first.currency, units=-oanda_config.units, take=take, stop=stop)
                 first.trade.oanda = trade.id
-                print(trade.id)
+                print(trade)
                 first.save()
 
-            if first.is_close(time=time) and first.trade.oanda is not None:
+            first.result(time=time)
+
+            if first.trade.state is not None and first.trade.oanda is not None:
                 trade = Trade(config=oanda_config, currency=first.currency, i=first.trade.oanda)
+                print(trade)
                 print(trade.close())
-                first.result()
-                print(first.trade.oanda)
                 first.save()
