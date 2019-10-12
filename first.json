@@ -1,5 +1,5 @@
 {
-  "current_context": "takethis",
+  "current_context": "test",
   "contexts": {
     "takethis": {
       "period": {
@@ -51,8 +51,8 @@
       "take": 10,
       "start_n": 25,
       "skip": 0,
-      "mean": 0.6,
-      "sd": 0.3,
+      "mean": 0.8,
+      "sd": 0.4,
       "currs": [
         {
           "first": "eur"

@@ -10,11 +10,11 @@ if __name__ == '__main__':
     time_interval = TimeInterval.init_from_file()
 
     for curency in greed_config.curency:
-        print(curency.name)
+        print(curency)
         time = curency.period.utc(datetime.now())
+        print(time)
         if time.weekday() in [5, 6]:
             continue
-        print(time)
         for greed in Greed.get_greed_from_table(curency, settings=greed_config.settings):
             print(greed)
             greed.get_gain()
@@ -26,23 +26,23 @@ if __name__ == '__main__':
                 if greed.trade.direction == "sell":
                     take = greed.last_price() + plus * greed.settings.stop_coef
                     stop = greed.last_price() - plus
-                    print(f"take={take}\tstop={stop}")
                     trade = Trade.create(config=oanda_config, currency=greed.currency, units=oanda_config.units, take=take, stop=stop)
                 else:
                     take = greed.last_price() - plus * greed.settings.stop_coef
                     stop = greed.last_price() + plus
-                    print(f"take={take}\tstop={stop}")
                     trade = Trade.create(config=oanda_config, currency=greed.currency, units=-oanda_config.units, take=take, stop=stop)
+                print("OPEN:", trade)
                 greed.trade.oanda = trade.id
 
             greed.check_end()
 
-            if greed.trade.is_close() and greed.trade.oanda is not None:
-                trade = Trade(config=oanda_config, currency=greed.currency, i=greed.trade.oanda)
-                print(trade.close())
+            if greed.trade.is_close():
+                if greed.trade.oanda is not None:
+                    trade = Trade(config=oanda_config, currency=greed.currency, i=greed.trade.oanda)
+                    print("CLOSE:", greed)
             greed.save(end=time)
-        print("new")
+
         greed = Greed(time=time, currency=curency, settings=greed_config.settings)
-        print(greed)
         if greed.len_greed >= greed_config.settings.history_min:
             greed.save_first_time()
+            print("NEW:", greed)

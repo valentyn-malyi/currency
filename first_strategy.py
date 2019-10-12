@@ -16,11 +16,13 @@ if __name__ == '__main__':
     name = name.replace(" ", "-").replace(":", "-")
     f = open("{}".format(name), "w")
     writer = csv.writer(f, lineterminator="\n", delimiter=';')
-    writer.writerow(["Cur", "Date", "Gain", "Days", "Exit", "History", "std", "mean"])
+    writer.writerow(["Cur", "Date", "Gain", "Days", "Exit", "History", "mean", "State", "Close"])
 
     for curency in first_config.curency:
         print(curency.name)
         for first in run_history(curency=curency, time_interval=time_interval, first_config=first_config):
             first.result(time=time_now)
-            writer.writerow([curency.name, first.time.date(), first.trade.gain, first.n, first.mean[first.n], first.history, first.sd[first.n]])
+            print(first)
+            writer.writerow([curency.name, first.time.date(), first.trade.gain, first.n, first.mean[first.n], first.history, first.sd[first.n],
+                             first.trade.state, first.trade.c])
             f.flush()

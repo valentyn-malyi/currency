@@ -284,7 +284,6 @@ def run_history(currency_pair: CurencyPair, time_interval: TimeInterval, third_c
         time += currency_pair.currency_main.period.delta
         if time.weekday() in [5, 6]:
             continue
-        print(time, currency_pair)
         third = Third(time=time, currency_pair=currency_pair, settings=third_config.settings)
         if third.n is not None:
             yield third
