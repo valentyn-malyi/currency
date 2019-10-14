@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Currency(models.Model):
     t = models.PositiveIntegerField(primary_key=True)
     high = models.FloatField()

@@ -7,7 +7,7 @@ venv/
 *.pyc
 src/
 __pycache__/
-schemas/history/history.db
+history.db
 
 # config
 time_interval.json
