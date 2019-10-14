@@ -118,7 +118,7 @@ class Currency:
         self.decode = f"{first.upper()}|{second.upper()}"
         self.period = period
         home = os.path.join(os.path.dirname(__file__), "..")
-        self.conn = sqlite3.connect(os.path.join(home, "schemas", "history", "history.db"))
+        self.conn = sqlite3.connect(os.path.join(home, "history.db"))
         self.cursor = self.conn.cursor()
         self.table = "currency_" + self.name + period.period
 
