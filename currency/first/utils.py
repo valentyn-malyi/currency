@@ -22,7 +22,7 @@ class Args:
 
 
 class First:
-    connection = sqlite3.connect(os.path.join(HOME, "schemas", "history", "history.db"))
+    connection = sqlite3.connect(os.path.join(HOME, "history.db"))
     cursor = connection.cursor()
 
     class Settings:

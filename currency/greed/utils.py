@@ -34,7 +34,7 @@ def destrib(a: numpy.array, x: float) -> float:
 
 
 class Greed:
-    connection = sqlite3.connect(os.path.join(HOME, "schemas", "history", "history.db"))
+    connection = sqlite3.connect(os.path.join(HOME, "history.db"))
     cursor = connection.cursor()
 
     class Settings:
