@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from currency.first.utils import First
 from currency.oanda import Config as OandaConfig
 from currency.oanda.trade import Trade
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     for curency in first_config.curency:
         print(curency)
-        time = curency.period.utc(datetime.now())
+        time = curency.period.utc(datetime.utcnow() + timedelta(hours=3))
         if time.weekday() in [5, 6]:
             continue
         print(time)

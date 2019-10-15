@@ -29,7 +29,6 @@ if __name__ == '__main__':
     c = Config.init_from_file()
     conn = sqlite3.connect(os.path.join(home, "history.db"))
     cursor = conn.cursor()
-    file_log = open(c.log.insert_bar, "a")
 
     for cur in gen_currencies(period=Daily(1)):
         url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=3&"
@@ -46,7 +45,6 @@ if __name__ == '__main__':
                 high = float(candle["mid"]["h"])
                 low = float(candle["mid"]["l"])
                 cursor.execute(f"INSERT OR REPLACE into {cur.table} values ({time.timestamp()},{high},{low},{close})")
-                file_log.write(f"{datetime.datetime.now()}|{cur.name}|{time.timestamp()}|{time}|{close}|{high}|{low}\n")
+                print(f"{datetime.datetime.now()}|{cur.name}|{time.timestamp()}|{time}|{close}|{high}|{low}\n")
 
-            file_log.flush()
             conn.commit()
