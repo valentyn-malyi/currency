@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from currency.third.utils import Third
-from currency.oanda import Config as OandaConfig
+from currency.oanda.utils import Config as OandaConfig
 from currency.oanda.trade import Trade
 from currency.utils import TimeInterval
 
@@ -28,12 +28,12 @@ if __name__ == '__main__':
                     take = third.enter_close() + plus * third.settings.take
                     stop = third.enter_close() - plus * third.settings.stop
                     trade = Trade.create(
-                        config=oanda_config, currency=third.currency_pair.currency_main, units=oanda_config.units, take=take, stop=stop)
+                        config=oanda_config, currency=third.currency_pair.currency_main, units=oanda_config.units.greed, take=take, stop=stop)
                 else:
                     take = third.enter_close() - plus * third.settings.take
                     stop = third.enter_close() + plus * third.settings.stop
                     trade = Trade.create(
-                        config=oanda_config, currency=third.currency_pair.currency_main, units=-oanda_config.units, take=take, stop=stop)
+                        config=oanda_config, currency=third.currency_pair.currency_main, units=-oanda_config.units.greed, take=take, stop=stop)
                 third.trade.oanda = trade.id
                 print("OPEN:", trade)
                 third.save()

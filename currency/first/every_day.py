@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from currency.first.utils import First
-from currency.oanda import Config as OandaConfig
+from currency.oanda.utils import Config as OandaConfig
 from currency.oanda.trade import Trade
 from currency.utils import TimeInterval
 
@@ -30,11 +30,11 @@ if __name__ == '__main__':
                 if first.direction == "buy":
                     take = first.enter_close() + plus * first.settings.take
                     stop = first.enter_close() - plus * first.settings.stop
-                    trade = Trade.create(config=oanda_config, currency=first.currency, units=oanda_config.units, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=first.currency, units=oanda_config.units.first, take=take, stop=stop)
                 else:
                     take = first.enter_close() - plus * first.settings.take
                     stop = first.enter_close() + plus * first.settings.stop
-                    trade = Trade.create(config=oanda_config, currency=first.currency, units=-oanda_config.units, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=first.currency, units=-oanda_config.units.first, take=take, stop=stop)
                 first.trade.oanda = trade.id
                 print("OPEN:", trade)
                 first.save()

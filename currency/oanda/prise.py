@@ -1,11 +1,10 @@
-from typing import List
-
 import requests
 import sqlite3
 import datetime
 import os
 from currency.utils import Daily, Period, Currency
-from currency.oanda import Config, h
+from currency.oanda.utils import Config, h
+from typing import List
 
 
 def gen_currencies(period: Period) -> List[Currency]:
@@ -45,6 +44,6 @@ if __name__ == '__main__':
                 high = float(candle["mid"]["h"])
                 low = float(candle["mid"]["l"])
                 cursor.execute(f"INSERT OR REPLACE into {cur.table} values ({time.timestamp()},{high},{low},{close})")
-                print(f"{datetime.datetime.now()}|{cur.name}|{time.timestamp()}|{time}|{close}|{high}|{low}\n")
+                print(f"{datetime.datetime.now()}|{cur.name}|{time.timestamp()}|{time}|{close}|{high}|{low}")
 
             conn.commit()

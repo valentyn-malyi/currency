@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from currency.greed.utils import Greed
-from currency.oanda import Config as OandaConfig
+from currency.oanda.utils import Config as OandaConfig
 from currency.oanda.trade import Trade
 from currency.utils import TimeInterval
 
@@ -26,11 +26,11 @@ if __name__ == '__main__':
                 if greed.trade.direction == "sell":
                     take = greed.last_price() + plus * greed.settings.stop_coef
                     stop = greed.last_price() - plus
-                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=oanda_config.units, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=oanda_config.units.greed, take=take, stop=stop)
                 else:
                     take = greed.last_price() - plus * greed.settings.stop_coef
                     stop = greed.last_price() + plus
-                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=-oanda_config.units, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=-oanda_config.units.greed, take=take, stop=stop)
                 print("OPEN:", trade)
                 greed.trade.oanda = trade.id
 

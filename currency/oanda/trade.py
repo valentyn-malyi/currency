@@ -1,7 +1,7 @@
 import requests
 import json
 from currency.utils import Currency
-from currency.oanda import Config, h
+from currency.oanda.utils import Config, h
 
 
 class Trade:
