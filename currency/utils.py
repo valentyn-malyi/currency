@@ -111,14 +111,13 @@ class Similar(Bar):
 class Currency:
 
     def __init__(self, period: Period, first: str = "usd", second: str = "usd"):
-        self.first = first
-        self.second = second
+        self.first = first.lower()
+        self.second = second.lower()
         self.name = f"{first}{second}"
         self.oanda = f"{first.upper()}_{second.upper()}"
         self.decode = f"{first.upper()}|{second.upper()}"
         self.period = period
-        home = os.path.join(os.path.dirname(__file__), "..")
-        self.conn = sqlite3.connect(os.path.join(home, "history.db"))
+        self.conn = sqlite3.connect(os.path.join(HOME, "history.db"))
         self.cursor = self.conn.cursor()
         self.table = "currency_" + self.name + period.period
 

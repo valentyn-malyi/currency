@@ -282,7 +282,7 @@ class Greed:
         end = self.currency.period.utc(end)
         if end < self.time:
             raise ValueError(f"end < self.time\nstart = {self.time}\nend = {end}")
-        self.trade.right_bar = self.currency.period.get_working_bars(start=self.time, end=end)
+        self.trade.right_bar = self.currency.period.get_working_bars(start=self.time, end=end) - 1
 
 
 def run_history(time_interval: TimeInterval, curency: Currency, greed_config: Greed.Config) -> Iterator[Greed]:

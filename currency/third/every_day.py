@@ -2,12 +2,10 @@ from datetime import datetime, timedelta
 from currency.third.utils import Third
 from currency.oanda.utils import Config as OandaConfig
 from currency.oanda.trade import Trade
-from currency.utils import TimeInterval
 
 if __name__ == '__main__':
     third_config = Third.Config.init_from_file()
     oanda_config = OandaConfig.init_from_file()
-    time_interval = TimeInterval.init_from_file()
 
     for currency_pair in third_config.currency_pairs:
         print(currency_pair)
