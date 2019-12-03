@@ -10,22 +10,21 @@ if __name__ == '__main__':
     time_interval = TimeInterval.init_from_file()
 
     for curency in first_config.curency:
-        print(curency)
         time = curency.period.utc(datetime.utcnow() + timedelta(hours=3))
         if time.weekday() in [5, 6]:
             continue
-        print(time)
+        print(curency, time)
 
         first = First(time=time, currency=curency, settings=first_config.settings)
+        print("CREATE", first)
 
         if first.n is not None:
             print("NEW:", first)
             first.save_first_time()
 
         for first in First.get_from_table(currency=curency, settings=first_config.settings):
-
+            print("GET", first)
             if first.trade.oanda is None:
-                print(first)
                 plus = abs(first.enter_close()) * first.atr()
                 if first.direction == "buy":
                     take = first.enter_close() + plus * first.settings.take

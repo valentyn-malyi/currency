@@ -31,9 +31,7 @@ if __name__ == '__main__':
 
     for cur in gen_currencies(period=Daily(1)):
         url = f"https://api-fxpractice.oanda.com/v3/instruments/{cur.oanda}/candles?granularity=D&count=3&"
-
         req = requests.get(url, headers=h(c.beaver)).json()
-
         for candle in req["candles"]:
             if candle["complete"]:
                 # add six hours

@@ -10,13 +10,13 @@ if __name__ == '__main__':
     time_interval = TimeInterval.init_from_file()
 
     for curency in greed_config.curency:
-        print(curency)
         time = curency.period.utc(datetime.utcnow() + timedelta(hours=3))
-        print(time)
         if time.weekday() in [5, 6]:
             continue
+        print(curency, time)
+
         for greed in Greed.get_greed_from_table(curency, settings=greed_config.settings):
-            print(greed)
+            print("GET", greed)
             greed.get_gain()
             greed.update_right_bar(end=time)
             greed.check_open()
@@ -43,6 +43,7 @@ if __name__ == '__main__':
             greed.save(end=time)
 
         greed = Greed(time=time, currency=curency, settings=greed_config.settings)
+        print("CREATE", greed)
         if greed.len_greed >= greed_config.settings.history_min:
             greed.save_first_time()
             print("NEW:", greed)
