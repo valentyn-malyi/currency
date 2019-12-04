@@ -24,16 +24,17 @@ if __name__ == '__main__':
             print("GET", third)
             if third.trade.oanda is None:
                 plus = abs(third.enter_close()) * third.atr()
+                units = oanda_config.units.third * third.enter_close() / third.atr() // 100
                 if third.direction == "buy":
                     take = third.enter_close() + plus * third.settings.take
                     stop = third.enter_close() - plus * third.settings.stop
                     trade = Trade.create(
-                        config=oanda_config, currency=third.currency_pair.currency_main, units=oanda_config.units.third, take=take, stop=stop)
+                        config=oanda_config, currency=third.currency_pair.currency_main, units=units, take=take, stop=stop)
                 else:
                     take = third.enter_close() - plus * third.settings.take
                     stop = third.enter_close() + plus * third.settings.stop
                     trade = Trade.create(
-                        config=oanda_config, currency=third.currency_pair.currency_main, units=-oanda_config.units.third, take=take, stop=stop)
+                        config=oanda_config, currency=third.currency_pair.currency_main, units=-units, take=take, stop=stop)
                 third.trade.oanda = trade.id
                 print("OPEN:", trade)
                 third.save()

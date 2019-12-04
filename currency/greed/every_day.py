@@ -23,14 +23,15 @@ if __name__ == '__main__':
 
             if greed.trade.oanda is None and greed.trade.is_open() and greed.check_skip() and greed.trade.state is None:
                 plus = abs(greed.day_enter_close()) * greed.atr()
+                units = oanda_config.units.greed * greed.last_price() / greed.atr() // 100
                 if greed.trade.direction == "sell":
                     take = greed.last_price() + plus * greed.settings.stop_coef
                     stop = greed.last_price() - plus
-                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=oanda_config.units.greed, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=units, take=take, stop=stop)
                 else:
                     take = greed.last_price() - plus * greed.settings.stop_coef
                     stop = greed.last_price() + plus
-                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=-oanda_config.units.greed, take=take, stop=stop)
+                    trade = Trade.create(config=oanda_config, currency=greed.currency, units=-units, take=take, stop=stop)
                 print("OPEN:", trade)
                 greed.trade.oanda = trade.id
 
