@@ -9,7 +9,6 @@ if __name__ == '__main__':
 
     for currency_pair in third_config.currency_pairs:
         time = currency_pair.currency_main.period.utc(datetime.utcnow() + timedelta(hours=3))
-        time = time.replace(day=20)
         if time.weekday() in [5, 6]:
             continue
         print(currency_pair, time)
